@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Wants to Be a RialONE?</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #E8E4D9; --bg2: #DEDAD0; --card: #F0EDE5; --card2: #E4E0D8;
+  --ink: #0A0A0A; --ink2: #2A2A2A; --muted: #6B6760;
+  --border: rgba(10,10,10,0.1); --border-strong: rgba(10,10,10,0.2);
+  --correct: #166534; --correct-bg: #DCFCE7;
+  --wrong: #991B1B; --wrong-bg: #FEE2E2;
+}
+html, body { height: 100%; }
+body { min-height:100vh; background:var(--bg); font-family:'Inter',sans-serif; color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.screen { position:relative; z-index:1; width:100%; }
+.logo-mark { width:40px; height:auto; }
+.logo-mark-sm { width:28px; height:auto; }
+
+/* ── TITLE ── */
+#title-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:2.5rem 1.5rem; text-align:center; animation:fadeUp 0.6s ease both; }
+.title-logo-row { display:flex; flex-direction:column; align-items:center; gap:1.4rem; margin-bottom:1.6rem; }
+.show-title { font-size:clamp(2.4rem,7vw,5rem); font-weight:900; letter-spacing:-0.03em; line-height:0.95; }
+.show-title em { font-style:normal; background:var(--ink); color:var(--bg); padding:0.03em 0.14em; border-radius:8px; }
+.show-subtitle { font-family:'Space Mono',monospace; font-size:clamp(0.6rem,1.4vw,0.74rem); color:var(--muted); letter-spacing:0.16em; text-transform:uppercase; margin:1.2rem 0 2.4rem; }
+.title-cards { display:flex; gap:0.9rem; margin-bottom:2.2rem; flex-wrap:wrap; justify-content:center; max-width:600px; }
+.title-card { background:var(--card); border:1.5px solid var(--border-strong); border-radius:18px; padding:1.1rem 1.3rem; text-align:left; flex:1; min-width:130px; max-width:165px; }
+.title-card-icon { font-size:1.3rem; margin-bottom:0.4rem; }
+.title-card-label { font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:0.2rem; }
+.title-card-val { font-size:1rem; font-weight:800; }
+.btn-primary { font-family:'Inter',sans-serif; font-size:0.92rem; font-weight:700; padding:0.88rem 2.8rem; background:var(--ink); color:var(--bg); border:none; border-radius:100px; cursor:pointer; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.2s; }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.2); }
+
+/* ── SHARED HEADER ── */
+.game-header { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:1.2rem; padding-bottom:1rem; border-bottom:1.5px solid var(--border-strong); }
+.top-brand { display:flex; align-items:center; gap:0.6rem; font-weight:800; font-size:1rem; letter-spacing:-0.02em; }
+.lifelines { display:flex; gap:0.4rem; }
+.lifeline-btn { font-family:'Space Mono',monospace; font-size:0.58rem; padding:0.36rem 0.68rem; border:1.5px solid var(--border-strong); background:var(--card); color:var(--ink2); cursor:pointer; border-radius:100px; letter-spacing:0.04em; transition:all 0.15s; font-weight:700; text-transform:uppercase; }
+.lifeline-btn:hover:not(:disabled) { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+.lifeline-btn:disabled { opacity:0.22; cursor:not-allowed; }
+.prize-label { font-family:'Space Mono',monospace; font-size:0.56rem; color:var(--muted); text-align:right; text-transform:uppercase; letter-spacing:0.08em; }
+.prize-label strong { display:block; font-size:1rem; color:var(--ink); font-family:'Inter',sans-serif; font-weight:900; letter-spacing:-0.02em; }
+.progress-row { display:flex; align-items:center; gap:0.8rem; width:100%; margin-bottom:1rem; }
+.question-counter { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); white-space:nowrap; }
+.progress-track { flex:1; height:2px; background:var(--border-strong); border-radius:99px; overflow:hidden; }
+.progress-fill { height:100%; background:var(--ink); transition:width 0.5s ease; border-radius:99px; }
+
+/* ── READ SCREEN ── */
+#read-screen { display:none; width:100%; max-width:780px; padding:1.5rem 1rem 2rem; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; }
+.read-card { width:100%; background:var(--card); border:1.5px solid var(--border-strong); border-radius:20px; padding:2rem 2rem 1.6rem; }
+.read-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.2rem; gap:1rem; }
+.read-label { font-family:'Space Mono',monospace; font-size:0.62rem; letter-spacing:0.16em; color:var(--muted); text-transform:uppercase; font-weight:700; margin-bottom:0.4rem; }
+.read-q-badge { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); background:var(--bg2); border:1px solid var(--border-strong); padding:0.25rem 0.7rem; border-radius:100px; display:inline-block; }
+.timer-wrap { display:flex; flex-direction:column; align-items:center; gap:0.4rem; flex-shrink:0; }
+.timer-ring-wrap { position:relative; width:70px; height:70px; }
+.timer-svg { width:70px; height:70px; transform:rotate(-90deg); }
+.timer-bg { fill:none; stroke:var(--border-strong); stroke-width:5; }
+.timer-arc { fill:none; stroke:var(--ink); stroke-width:5; stroke-linecap:round; stroke-dasharray:188.5; stroke-dashoffset:0; transition:stroke-dashoffset 1s linear, stroke 0.5s; }
+.timer-arc.warning { stroke:#D97706; }
+.timer-arc.urgent { stroke:#DC2626; }
+.timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:1.3rem; font-weight:700; }
+.timer-num.warning { color:#D97706; }
+.timer-num.urgent { color:#DC2626; }
+.timer-label { font-family:'Space Mono',monospace; font-size:0.55rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+.passage-body { font-size:clamp(0.9rem,2vw,1.06rem); line-height:1.78; color:var(--ink2); margin-bottom:1.4rem; }
+.read-footer { display:flex; justify-content:space-between; align-items:center; padding-top:1rem; border-top:1px solid var(--border); }
+.skip-btn { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); background:none; border:1.5px solid var(--border-strong); padding:0.3rem 0.8rem; border-radius:100px; cursor:pointer; text-transform:uppercase; letter-spacing:0.08em; transition:all 0.15s; }
+.skip-btn:hover { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+.read-hint { font-family:'Space Mono',monospace; font-size:0.56rem; color:var(--muted); opacity:0.6; }
+
+/* ── QUESTION SCREEN ── */
+#question-screen { display:none; width:100%; max-width:780px; padding:1.5rem 1rem 2rem; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; }
+.question-card { width:100%; background:var(--ink); color:var(--bg); border-radius:16px; padding:1.5rem 1.8rem; margin-bottom:0.85rem; }
+.question-meta { font-family:'Space Mono',monospace; font-size:0.56rem; color:rgba(232,228,217,0.4); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:0.65rem; }
+.question-text { font-size:clamp(0.95rem,2.4vw,1.2rem); font-weight:700; line-height:1.45; letter-spacing:-0.01em; }
+.answers-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; width:100%; margin-bottom:0.7rem; }
+.answer-btn { background:var(--card); border:1.5px solid var(--border-strong); border-radius:12px; color:var(--ink); padding:0.85rem 1rem; font-family:'Inter',sans-serif; font-size:clamp(0.78rem,1.8vw,0.92rem); font-weight:600; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:0.55rem; text-align:left; }
+.answer-btn:hover:not(:disabled) { background:var(--ink); color:var(--bg); border-color:var(--ink); transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,0.13); }
+.answer-key { font-family:'Space Mono',monospace; font-size:0.62rem; font-weight:700; min-width:18px; color:var(--muted); transition:color 0.15s; }
+.answer-btn:hover:not(:disabled) .answer-key { color:rgba(232,228,217,0.45); }
+.answer-btn.selected { background:#1A1A1A; color:var(--bg); border-color:#1A1A1A; animation:selectBounce 0.35s ease; }
+.answer-btn.selected .answer-key { color:rgba(232,228,217,0.4); }
+@keyframes selectBounce { 0%{transform:scale(1)} 40%{transform:scale(1.02)} 100%{transform:scale(1)} }
+.answer-btn.correct { background:var(--correct-bg); border-color:var(--correct); color:var(--correct); animation:correctPop 0.35s ease 3; }
+.answer-btn.correct .answer-key { color:var(--correct); }
+@keyframes correctPop { 0%,100%{background:var(--correct-bg)} 50%{background:#BBF7D0} }
+.answer-btn.wrong { background:var(--wrong-bg); border-color:var(--wrong); color:var(--wrong); }
+.answer-btn.wrong .answer-key { color:var(--wrong); }
+.answer-btn.faded { opacity:0.15; pointer-events:none; }
+.answer-btn:disabled { cursor:not-allowed; }
+
+/* ── PEEK BUTTON ── */
+.peek-row { display:flex; justify-content:center; margin-bottom:0.5rem; }
+.peek-btn { font-family:'Space Mono',monospace; font-size:0.62rem; background:var(--card); border:1.5px solid var(--border-strong); padding:0.4rem 1.1rem; border-radius:100px; cursor:pointer; text-transform:uppercase; letter-spacing:0.08em; transition:all 0.15s; display:flex; align-items:center; gap:0.5rem; }
+.peek-btn.available { color:var(--ink2); }
+.peek-btn.available:hover { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+.peek-btn.used { color:var(--muted); opacity:0.35; cursor:not-allowed; border-style:dashed; }
+.peek-badge { font-size:0.55rem; background:var(--ink); color:var(--bg); padding:0.1rem 0.4rem; border-radius:100px; letter-spacing:0.05em; }
+.peek-btn.used .peek-badge { background:var(--muted); }
+
+/* ── PRIZE LADDER ── */
+.prize-ladder { position:fixed; right:0.8rem; top:50%; transform:translateY(-50%); display:flex; flex-direction:column-reverse; gap:1px; z-index:10; }
+.ladder-rung { display:flex; align-items:center; gap:0.4rem; padding:2px 8px; font-family:'Space Mono',monospace; font-size:0.5rem; color:var(--muted); transition:all 0.3s; border-radius:4px; }
+.ladder-rung.milestone { color:var(--ink2); font-weight:700; }
+.ladder-rung.passed { opacity:0.28; }
+.ladder-rung.current { background:var(--ink); color:var(--bg); border-radius:6px; padding:3px 10px; font-weight:700; font-size:0.56rem; }
+
+/* ── OVERLAYS ── */
+.overlay { display:none; position:fixed; inset:0; background:rgba(10,10,10,0.45); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+.overlay.active { display:flex; }
+.overlay-box { background:var(--card); border:1.5px solid var(--border-strong); border-radius:22px; padding:2.2rem; max-width:440px; width:90%; text-align:center; animation:slideUp 0.3s ease; }
+@keyframes slideUp { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
+.overlay-label { font-family:'Space Mono',monospace; font-size:0.62rem; letter-spacing:0.18em; color:var(--muted); text-transform:uppercase; font-weight:700; margin-bottom:1rem; }
+.overlay-content { font-size:0.96rem; line-height:1.72; color:var(--ink2); margin-bottom:1.6rem; }
+.btn-close { font-family:'Inter',sans-serif; font-weight:700; padding:0.6rem 2rem; border:none; background:var(--ink); color:var(--bg); cursor:pointer; font-size:0.82rem; letter-spacing:0.05em; text-transform:uppercase; border-radius:100px; transition:all 0.2s; }
+.btn-close:hover { box-shadow:0 4px 16px rgba(0,0,0,0.18); transform:translateY(-1px); }
+.peek-passage-text { font-size:0.88rem; line-height:1.72; color:var(--ink2); text-align:left; margin-bottom:1.5rem; max-height:250px; overflow-y:auto; }
+.audience-chart { margin:0.6rem 0; }
+.audience-row { display:flex; align-items:center; gap:0.65rem; margin-bottom:0.42rem; }
+.aud-label { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--ink); width:14px; font-weight:700; }
+.aud-track { flex:1; height:22px; background:var(--bg2); border-radius:5px; overflow:hidden; border:1px solid var(--border-strong); }
+.aud-fill { height:100%; background:var(--ink); border-radius:5px; transition:width 0.9s ease 0.15s; width:0%; }
+.aud-pct { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--muted); width:32px; text-align:right; }
+
+/* ── RESULT ── */
+#result-screen { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:2rem; text-align:center; animation:fadeUp 0.6s ease both; }
+.result-card { background:var(--card); border:1.5px solid var(--border-strong); border-radius:24px; padding:3rem 2.5rem; max-width:460px; width:100%; }
+.result-icon { font-size:3.2rem; margin-bottom:1rem; display:block; }
+.result-title { font-size:clamp(1.8rem,5vw,3rem); font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:0.5rem; }
+.result-title em { font-style:normal; background:var(--ink); color:var(--bg); padding:0.03em 0.13em; border-radius:7px; }
+.result-prize { font-size:1rem; font-weight:700; color:var(--ink2); margin:0.7rem 0 0.8rem; }
+.result-msg { font-size:0.87rem; color:var(--muted); margin-bottom:1.8rem; line-height:1.6; }
+.rialo-footer { font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.12em; color:var(--muted); text-transform:uppercase; margin-top:1.5rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; }
+.rialo-footer a { color:var(--ink); text-decoration:none; font-weight:700; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:600px){ .answers-grid{grid-template-columns:1fr;} .prize-ladder{display:none;} .title-cards{display:none;} }
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="title-screen" class="screen">
+  <div class="title-logo-row">
+    <img src="data:image/png;base64,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" class="logo-mark" alt="Rialo">
+    <div class="show-title">Who Wants to Be<br>a <em>RialONE?</em></div>
+  </div>
+  <div class="show-subtitle">Read the writeup &middot; Answer the question &middot; Win big</div>
+  <div class="title-cards">
+    <div class="title-card"><div class="title-card-icon">📖</div><div class="title-card-label">Read First</div><div class="title-card-val">30 sec</div></div>
+    <div class="title-card"><div class="title-card-icon">🎯</div><div class="title-card-label">Questions</div><div class="title-card-val">15 Total</div></div>
+    <div class="title-card"><div class="title-card-icon">👁</div><div class="title-card-label">Peek Back</div><div class="title-card-val">1 Use Only</div></div>
+    <div class="title-card"><div class="title-card-icon">🏆</div><div class="title-card-label">Top Prize</div><div class="title-card-val">RialONE</div></div>
+  </div>
+  <button class="btn-primary" onclick="startGame()">Start Game &rarr;</button>
+</div>
+
+<!-- READ SCREEN -->
+<div id="read-screen" class="screen">
+  <div class="game-header">
+    <div class="top-brand">
+      <img src="data:image/png;base64,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" class="logo-mark-sm" alt="Rialo">
+      RialONE
+    </div>
+    <div class="lifelines">
+      <button class="lifeline-btn" id="r-ll-5050" onclick="useFiftyFifty()">50:50</button>
+      <button class="lifeline-btn" id="r-ll-phone" onclick="usePhone()">Phone</button>
+      <button class="lifeline-btn" id="r-ll-audience" onclick="useAudience()">Audience</button>
+    </div>
+    <div class="prize-label">Prize<strong id="read-prize">$0</strong></div>
+  </div>
+  <div class="progress-row">
+    <div class="question-counter" id="read-counter">Q1 / 15</div>
+    <div class="progress-track"><div class="progress-fill" id="read-progress" style="width:0%"></div></div>
+  </div>
+  <div class="read-card">
+    <div class="read-top">
+      <div>
+        <div class="read-label">📖 Read This Passage</div>
+        <div class="read-q-badge" id="read-q-badge">Question 1 · $500</div>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-ring-wrap">
+          <svg class="timer-svg" viewBox="0 0 70 70">
+            <circle class="timer-bg" cx="35" cy="35" r="30"/>
+            <circle class="timer-arc" id="timer-arc" cx="35" cy="35" r="30"/>
+          </svg>
+          <div class="timer-num" id="timer-num">30</div>
+        </div>
+        <div class="timer-label">seconds</div>
+      </div>
+    </div>
+    <div class="passage-body" id="passage-body">Loading...</div>
+    <div class="read-footer">
+      <div class="read-hint">Question appears after the timer</div>
+      <button class="skip-btn" onclick="skipToQuestion()">Skip &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTION SCREEN -->
+<div id="question-screen" class="screen">
+  <div class="game-header">
+    <div class="top-brand">
+      <img src="data:image/png;base64,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" class="logo-mark-sm" alt="Rialo">
+      RialONE
+    </div>
+    <div class="lifelines">
+      <button class="lifeline-btn" id="q-ll-5050" onclick="useFiftyFifty()">50:50</button>
+      <button class="lifeline-btn" id="q-ll-phone" onclick="usePhone()">Phone</button>
+      <button class="lifeline-btn" id="q-ll-audience" onclick="useAudience()">Audience</button>
+    </div>
+    <div class="prize-label">Prize<strong id="q-prize">$0</strong></div>
+  </div>
+  <div class="progress-row">
+    <div class="question-counter" id="q-counter">Q1 / 15</div>
+    <div class="progress-track"><div class="progress-fill" id="q-progress" style="width:0%"></div></div>
+  </div>
+  <div class="question-card">
+    <div class="question-meta" id="q-meta">Question 1 · $500</div>
+    <div class="question-text" id="question-text">Loading…</div>
+  </div>
+  <div class="answers-grid" id="answers-grid"></div>
+  <div class="peek-row">
+    <button class="peek-btn available" id="peek-btn" onclick="peekPassage()">
+      <span>👁 View Passage</span>
+      <span class="peek-badge" id="peek-badge">1 USE LEFT</span>
+    </button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen" class="screen">
+  <div class="result-card">
+    <span class="result-icon" id="result-icon">🏆</span>
+    <div class="result-title" id="result-title">You&apos;re a <em>RialONE!</em></div>
+    <div class="result-prize" id="result-prize"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <button class="btn-primary" onclick="resetGame()">&#8635; Play Again</button>
+  </div>
+  <div class="rialo-footer">
+    <img src="data:image/png;base64,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" style="width:16px;height:auto;" alt="">
+    Powered by <a href="https://www.rialo.io" target="_blank">rialo.io</a>
+  </div>
+</div>
+
+<!-- PRIZE LADDER -->
+<div class="prize-ladder" id="prize-ladder"></div>
+
+<!-- LIFELINE OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="overlay-label" id="overlay-label"></div>
+    <div class="overlay-content" id="overlay-content"></div>
+    <button class="btn-close" onclick="closeOverlay()">Got it</button>
+  </div>
+</div>
+
+<!-- PEEK OVERLAY -->
+<div class="overlay" id="peek-overlay">
+  <div class="overlay-box">
+    <div class="overlay-label">📖 Passage</div>
+    <div class="peek-passage-text" id="peek-passage-text"></div>
+    <button class="btn-close" onclick="closePeek()">Back to Question</button>
+  </div>
+</div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AUDIO ENGINE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+function getCtx() {
+  if (!actx) actx = new AudioCtx();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+function playTone(freq, type, duration, vol=0.3, delay=0) {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    const t = ctx.currentTime + delay;
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.start(t); osc.stop(t + duration + 0.05);
+  } catch(e) {}
+}
+
+// Crowd noise via layered noise + bandpass filter
+function playCrowdNoise(type, duration) {
+  try {
+    const ctx = getCtx();
+    const bufSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    // Bandpass to shape into crowd texture
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = type === 'applause' ? 2200 : 600;
+    bp.Q.value = type === 'applause' ? 0.4 : 0.6;
+
+    // Gain envelope
+    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+
+    if (type === 'applause') {
+      // Clapping texture: rapid amplitude modulation
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.frequency.value = 8; // ~8 claps/sec
+      lfoGain.gain.value = 0.5;
+      lfo.connect(lfoGain);
+      // Swell up then sustain then fade
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.6, now + 0.3);
+      gain.gain.setValueAtTime(0.5, now + duration - 0.5);
+      gain.gain.linearRampToValueAtTime(0, now + duration);
+      source.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+      lfo.start(now); lfo.stop(now + duration);
+
+      // Add a second layer for richness
+      const buf2 = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const d2 = buf2.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) d2[i] = (Math.random() * 2 - 1);
+      const s2 = ctx.createBufferSource(); s2.buffer = buf2;
+      const bp2 = ctx.createBiquadFilter(); bp2.type = 'bandpass'; bp2.frequency.value = 1200; bp2.Q.value = 0.3;
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0, now);
+      g2.gain.linearRampToValueAtTime(0.3, now + 0.4);
+      g2.gain.linearRampToValueAtTime(0, now + duration);
+      s2.connect(bp2); bp2.connect(g2); g2.connect(ctx.destination);
+      s2.start(now); s2.stop(now + duration);
+    } else {
+      // Murmur / groan: low rumble with disappointed tone
+      bp.frequency.value = 400; bp.Q.value = 0.8;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.5, now + 0.15);
+      gain.gain.setValueAtTime(0.4, now + duration - 0.4);
+      gain.gain.linearRampToValueAtTime(0, now + duration);
+      source.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+
+      // Add a low "aww" tone
+      const lfo = ctx.createOscillator();
+      const lg = ctx.createGain();
+      lfo.type = 'sine'; lfo.frequency.value = 180;
+      lg.gain.setValueAtTime(0, now);
+      lg.gain.linearRampToValueAtTime(0.18, now + 0.2);
+      lg.gain.linearRampToValueAtTime(0, now + duration);
+      lfo.connect(lg); lg.connect(ctx.destination);
+      lfo.start(now); lfo.stop(now + duration);
+
+      // Descending "ohh" tone
+      const osc2 = ctx.createOscillator();
+      const og = ctx.createGain();
+      osc2.type = 'sine'; osc2.frequency.setValueAtTime(280, now);
+      osc2.frequency.linearRampToValueAtTime(180, now + duration);
+      og.gain.setValueAtTime(0, now);
+      og.gain.linearRampToValueAtTime(0.15, now + 0.1);
+      og.gain.linearRampToValueAtTime(0, now + duration);
+      osc2.connect(og); og.connect(ctx.destination);
+      osc2.start(now); osc2.stop(now + duration);
+    }
+    source.start(now); source.stop(now + duration);
+  } catch(e) {}
+}
+
+function sfx_tick() { playTone(880, 'sine', 0.08, 0.12); }
+function sfx_urgentTick() { playTone(1100, 'square', 0.06, 0.18); }
+
+function sfx_select() {
+  playTone(660, 'sine', 0.1, 0.18);
+  playTone(880, 'sine', 0.08, 0.14, 0.08);
+}
+
+function sfx_correct() {
+  // Fanfare
+  [[523,0],[659,0.1],[784,0.2],[1047,0.32]].forEach(([f,d]) => playTone(f,'sine',0.32,0.28,d));
+}
+
+function sfx_wrong() {
+  playTone(220, 'sawtooth', 0.3, 0.32);
+  playTone(165, 'sawtooth', 0.28, 0.28, 0.2);
+}
+
+function sfx_timerEnd() {
+  playTone(440, 'square', 0.1, 0.28);
+  playTone(330, 'square', 0.08, 0.22, 0.12);
+}
+
+function sfx_transition() {
+  playTone(523, 'sine', 0.12, 0.18);
+  playTone(659, 'sine', 0.1, 0.14, 0.1);
+}
+
+function sfx_applause() { playCrowdNoise('applause', 3.5); }
+function sfx_murmur()   { playCrowdNoise('murmur', 2.8); }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// QUESTIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const QUESTIONS = [
+  { passage: "Rialo is a high-throughput blockchain network built by Subzero Labs. It raised $20M in its initial seed round with backing from Pantera Capital. The protocol is designed specifically for real-world financial applications, combining speed, privacy, and native automation in one unified network.", q: "Who is the company behind the Rialo protocol?", a: ["Pantera Labs","Subzero Labs","CoinBase Ventures","Mysten Labs"], correct: 1 },
+  { passage: "Rialo's consensus mechanism is designed for high throughput with parallel multi-concurrent proposers. The block time is set at 50 milliseconds — significantly faster than most blockchain networks in the industry. This speed enables real-time financial applications that weren't previously possible on-chain.", q: "What is the block time of Rialo Consensus?", a: ["200ms","100ms","50ms","500ms"], correct: 2 },
+  { passage: "Rialo Cruise is a native feature of the Rialo protocol. It is designed to eliminate the friction of transaction fees, which has historically been a barrier to everyday adoption of blockchain technology. With Cruise, apps can offer seamless, low-to-zero fee transactions natively at the protocol level.", q: "What does 'Rialo Cruise' enable on the network?", a: ["Faster block finality","Native gas-less transactions","Cross-chain bridging","Identity verification"], correct: 1 },
+  { passage: "Privacy is one of Rialo's core architectural priorities. The system integrates identity, privacy, and compliance as foundational capabilities — not afterthoughts. It uses threshold MPC handshakes and identity-based encryption to enable confidential computing at scale on a public network.", q: "What does 'Rialo IPC' stand for?", a: ["Inter-Protocol Communication","Identity, Privacy and Compliance","Integrated Private Consensus","Indexed Protocol Chain"], correct: 1 },
+  { passage: "One of Rialo's most distinctive components is Rialo Stream. Traditional blockchain oracles can suffer from latency and high costs. Rialo Stream provides native data feeds for DeFi and real-world assets directly, and is reported to be more than 40 times faster than the top oracle solutions currently on the market.", q: "What is Rialo Stream used for?", a: ["Sending encrypted messages","Native data feeds for DeFi and RWAs","Gas optimization","Cross-chain token swaps"], correct: 1 },
+  { passage: "Rialo Edge provides bidirectional Web2 interactivity without requiring any middleware. This allows decentralized apps to communicate directly with traditional internet services at massive scale. Rialo Edge supports over 100,000 concurrent web calls — a capability that opens up entirely new categories of blockchain applications.", q: "How many concurrent web calls can Rialo Edge support?", a: [">1,000",">10,000",">50,000",">100,000"], correct: 3 },
+  { passage: "Rialo's virtual machine (VM) is built on RISC-V architecture and is compatible with SVM. It includes a ZK-friendly runtime called REX — the Rialo Extended Execution Runtime. REX is designed specifically to empower confidential computing, enabling privacy-preserving applications to run natively on the network.", q: "What does 'REX' stand for in the Rialo ecosystem?", a: ["Rapid Execution Extension","Rialo Extended Execution Runtime","Recursive Encryption eXchange","Real-time EVM eXecution"], correct: 1 },
+  { passage: "Rialo's native interoperability layer is called Rialo Interop. It allows assets and data to move between chains safely, cheaply, and quickly — without needing external bridge protocols. Rialo Interop is more than 10 times faster than the top bridge solutions currently available, making cross-chain operations nearly seamless.", q: "How much faster is Rialo Interop compared to top bridges?", a: ["2x faster","5x faster",">10x faster",">100x faster"], correct: 2 },
+  { passage: "Rialo Read Path is a data access layer that allows apps to read state directly from validators, dramatically reducing the delay compared to standard blockchain data queries. For data-heavy applications, this translates into real cost savings — cutting more than $3,000 per month in infrastructure expenses for some projects.", q: "How much can Rialo Read Path save per month in costs?", a: [">$500/month",">$1,000/month",">$3,000/month",">$10,000/month"], correct: 2 },
+  { passage: "Rialo's Omni Account is one of its headline user-facing features. Rather than requiring separate wallets or accounts on different networks, it provides a single unified account that can transact across multiple blockchain networks. This dramatically simplifies the user experience for multi-chain applications.", q: "What does the Rialo Omni Account enable for users?", a: ["Free transactions forever","One account transacting on multiple networks","Anonymous identity management","Automatic yield generation"], correct: 1 },
+  { passage: "Reactive transactions, also called 'Rialo Workflow', enable native automation and autonomous complex workflows directly on the Rialo network. Unlike other blockchains that rely on off-chain schedulers or external monitoring, Rialo Workflow allows applications to respond to real-world events automatically within the consensus process itself.", q: "What is the purpose of Rialo Workflow?", a: ["Managing validator nodes","Native automation and autonomous complex workflows","Token vesting schedules","Cross-chain liquidity routing"], correct: 1 },
+  { passage: "Jan Camenisch is one of the most influential cryptographers of the past three decades. Subzero Labs brought him on to strengthen Rialo's privacy and cryptography foundations. His work has shaped modern identity systems and privacy-preserving protocols used across both Web2 and Web3 infrastructure today.", q: "Which distinguished cryptographer joined Subzero Labs (Rialo)?", a: ["Whitfield Diffie","Jan Camenisch","Dan Boneh","Adi Shamir"], correct: 1 },
+  { passage: "Rialo's Execution Engine is designed to cut transaction latency from the second-range all the way down to nanoseconds. It achieves this through event-driven execution using Conditional Transactions, combined with Hybrid Concurrency Control that dynamically adapts to real-world workload patterns.", q: "What latency does Rialo's Execution Engine achieve?", a: ["Milliseconds","Seconds","Nanoseconds","Minutes"], correct: 2 },
+  { passage: "Rialo's Mainnet launch is planned for 2026. The project made significant progress through 2025: launching Testnet v1 in Q4, onboarding over 30 dApp partnerships, running an in-person builder program, and committing 10 native dApps for day-one deployment at Mainnet launch.", q: "When is Rialo's Mainnet launch planned?", a: ["2024","2025","2026","2027"], correct: 2 },
+  { passage: "The concept of 'supermodularity' is central to Rialo's architectural philosophy. By integrating critical primitives — oracles, automation, privacy gadgets, and interoperability — directly into the base layer, Rialo aims to maximize overall ecosystem welfare. This eliminates the fragmentation and rent extraction that degrades user experience in typical modular blockchain designs.", q: "What economic concept defines Rialo's core architectural philosophy?", a: ["Composability","Supermodularity","Decentralization","Liquidity Fragmentation"], correct: 1 }
+];
+
+const PRIZES = ['$500','$1,000','$2,000','$3,000','$5,000','$7,500','$10,000','$15,000','$20,000','$30,000','$50,000','$75,000','$125,000','$250,000','RialONE 🏆'];
+const MILESTONES = [4, 9];
+const LETTERS = ['A','B','C','D'];
+
+let currentQ = 0;
+let lifelines = {f50:true, phone:true, audience:true};
+let peekUsed = false; // global — exhausted after one use ever
+let answered = false;
+let timerInterval = null, timerSec = 30;
+
+// Build ladder
+(function(){
+  const el = document.getElementById('prize-ladder');
+  PRIZES.forEach((p,i) => {
+    const div = document.createElement('div');
+    div.className = 'ladder-rung' + (MILESTONES.includes(i)?' milestone':'');
+    div.id = 'rung-'+i;
+    div.innerHTML = '<span>'+(i+1)+'</span><span>'+p+'</span>';
+    el.appendChild(div);
+  });
+})();
+
+function allOff() {
+  ['title-screen','read-screen','question-screen','result-screen'].forEach(id =>
+    document.getElementById(id).style.display = 'none');
+}
+
+function startGame() {
+  sfx_transition();
+  allOff();
+  currentQ = 0;
+  peekUsed = false;
+  lifelines = {f50:true, phone:true, audience:true};
+  updatePeekBtn();
+  showReadScreen();
+}
+
+function updateLadder() {
+  PRIZES.forEach((_,i) => {
+    const r = document.getElementById('rung-'+i);
+    r.className = 'ladder-rung' + (MILESTONES.includes(i)?' milestone':'');
+    if (i < currentQ) r.classList.add('passed');
+    if (i === currentQ) r.classList.add('current');
+  });
+}
+
+function syncLifelineButtons() {
+  document.getElementById('r-ll-5050').disabled = !lifelines.f50;
+  document.getElementById('r-ll-phone').disabled = !lifelines.phone;
+  document.getElementById('r-ll-audience').disabled = !lifelines.audience;
+  document.getElementById('q-ll-5050').disabled = !lifelines.f50;
+  document.getElementById('q-ll-phone').disabled = !lifelines.phone;
+  document.getElementById('q-ll-audience').disabled = !lifelines.audience;
+}
+
+function updateHeaders() {
+  const prize = currentQ > 0 ? PRIZES[currentQ-1] : '$0';
+  const pct = ((currentQ/QUESTIONS.length)*100)+'%';
+  const label = 'Q'+(currentQ+1)+' / '+QUESTIONS.length;
+  const meta = 'Question '+(currentQ+1)+' · '+PRIZES[currentQ];
+  document.getElementById('read-prize').textContent = prize;
+  document.getElementById('q-prize').textContent = prize;
+  document.getElementById('read-counter').textContent = label;
+  document.getElementById('q-counter').textContent = label;
+  document.getElementById('read-progress').style.width = pct;
+  document.getElementById('q-progress').style.width = pct;
+  document.getElementById('read-q-badge').textContent = meta;
+  document.getElementById('q-meta').textContent = meta;
+  syncLifelineButtons();
+  updateLadder();
+}
+
+function updatePeekBtn() {
+  const btn = document.getElementById('peek-btn');
+  const badge = document.getElementById('peek-badge');
+  if (peekUsed) {
+    btn.className = 'peek-btn used';
+    btn.onclick = null;
+    badge.textContent = 'USED';
+  } else {
+    btn.className = 'peek-btn available';
+    btn.onclick = peekPassage;
+    badge.textContent = '1 USE LEFT';
+  }
+}
+
+// ── READ SCREEN ──
+function showReadScreen() {
+  allOff();
+  document.getElementById('read-screen').style.display = 'flex';
+  updateHeaders();
+  document.getElementById('passage-body').textContent = QUESTIONS[currentQ].passage;
+  document.getElementById('peek-passage-text').textContent = QUESTIONS[currentQ].passage;
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSec = 30;
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timerSec--;
+    updateTimerUI();
+    if (timerSec <= 10 && timerSec > 5) sfx_tick();
+    if (timerSec <= 5 && timerSec > 0) sfx_urgentTick();
+    if (timerSec <= 0) {
+      clearInterval(timerInterval);
+      sfx_timerEnd();
+      setTimeout(showQuestionScreen, 420);
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const arc = document.getElementById('timer-arc');
+  const num = document.getElementById('timer-num');
+  const offset = 188.5 * (1 - timerSec / 30);
+  arc.style.strokeDashoffset = offset;
+  num.textContent = timerSec;
+  const warn = timerSec <= 10 && timerSec > 5;
+  const urgent = timerSec <= 5;
+  arc.className = 'timer-arc' + (urgent?' urgent':warn?' warning':'');
+  num.className = 'timer-num' + (urgent?' urgent':warn?' warning':'');
+}
+
+function skipToQuestion() {
+  clearInterval(timerInterval);
+  sfx_transition();
+  setTimeout(showQuestionScreen, 100);
+}
+
+// ── QUESTION SCREEN ──
+function showQuestionScreen() {
+  allOff();
+  answered = false;
+  sfx_transition();
+  document.getElementById('question-screen').style.display = 'flex';
+  updateHeaders();
+  updatePeekBtn();
+  document.getElementById('question-text').textContent = QUESTIONS[currentQ].q;
+  document.getElementById('peek-passage-text').textContent = QUESTIONS[currentQ].passage;
+  const grid = document.getElementById('answers-grid');
+  grid.innerHTML = '';
+  QUESTIONS[currentQ].a.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn'; btn.id = 'ans-'+i;
+    btn.onclick = () => selectAnswer(i);
+    btn.innerHTML = '<span class="answer-key">'+LETTERS[i]+'</span>'+ans;
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  sfx_select();
+  document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+  const q = QUESTIONS[currentQ];
+  document.getElementById('ans-'+idx).classList.add('selected');
+  setTimeout(() => {
+    document.getElementById('ans-'+idx).classList.remove('selected');
+    if (idx === q.correct) {
+      sfx_correct();
+      setTimeout(() => sfx_applause(), 350); // applause after fanfare starts
+      document.getElementById('ans-'+idx).classList.add('correct');
+      setTimeout(() => {
+        currentQ++;
+        if (currentQ >= QUESTIONS.length) showResult(true);
+        else showReadScreen();
+      }, 2400);
+    } else {
+      sfx_wrong();
+      setTimeout(() => sfx_murmur(), 250);
+      document.getElementById('ans-'+idx).classList.add('wrong');
+      document.getElementById('ans-'+q.correct).classList.add('correct');
+      setTimeout(() => {
+        let si = -1;
+        for (let i = MILESTONES.length-1; i >= 0; i--) {
+          if (currentQ > MILESTONES[i]) { si = MILESTONES[i]; break; }
+        }
+        showResult(false, si >= 0 ? PRIZES[si] : '$0');
+      }, 2800);
+    }
+  }, 1500);
+}
+
+// ── PEEK PASSAGE (one-time lifeline) ──
+function peekPassage() {
+  if (peekUsed) return;
+  peekUsed = true;
+  sfx_select();
+  updatePeekBtn();
+  document.getElementById('peek-overlay').classList.add('active');
+}
+function closePeek() {
+  document.getElementById('peek-overlay').classList.remove('active');
+}
+
+// ── LIFELINES ──
+function useFiftyFifty() {
+  if (!lifelines.f50 || answered) return;
+  lifelines.f50 = false; sfx_select();
+  syncLifelineButtons();
+  const q = QUESTIONS[currentQ];
+  const wrong = [0,1,2,3].filter(i=>i!==q.correct).sort(()=>Math.random()-0.5).slice(0,2);
+  wrong.forEach(i => { const el = document.getElementById('ans-'+i); if(el) el.classList.add('faded'); });
+}
+
+function usePhone() {
+  if (!lifelines.phone || answered) return;
+  lifelines.phone = false; sfx_select();
+  syncLifelineButtons();
+  const q = QUESTIONS[currentQ]; const ca = q.a[q.correct];
+  const confident = Math.random() > 0.2;
+  let text;
+  if (confident) {
+    const msgs = [
+      "I'm about 90% sure it's <strong>"+ca+"</strong>. I've been reading about this!",
+      "Definitely <strong>"+ca+"</strong>! I just looked this up last week.",
+      "I'd go with <strong>"+ca+"</strong>. Pretty confident here."
+    ];
+    text = msgs[Math.floor(Math.random()*msgs.length)];
+  } else {
+    const wi = [0,1,2,3].filter(i=>i!==q.correct)[Math.floor(Math.random()*3)];
+    text = "Hmm, maybe <strong>"+q.a[wi]+"</strong>? I'm honestly not certain...";
+  }
+  showOverlay('📞 Phone a Friend', text, true);
+}
+
+function useAudience() {
+  if (!lifelines.audience || answered) return;
+  lifelines.audience = false; sfx_select();
+  syncLifelineButtons();
+  const q = QUESTIONS[currentQ];
+  const votes = [0,1,2,3].map(()=>Math.floor(Math.random()*10)+5);
+  votes[q.correct] = Math.floor(Math.random()*20)+50;
+  const total = votes.reduce((a,b)=>a+b,0);
+  const pcts = votes.map(v=>Math.round(v/total*100));
+  let html = '<div class="audience-chart">';
+  LETTERS.forEach((l,i) => {
+    html += '<div class="audience-row"><span class="aud-label">'+l+'</span><div class="aud-track"><div class="aud-fill" id="aud-'+i+'" style="width:0%"></div></div><span class="aud-pct">'+pcts[i]+'%</span></div>';
+  });
+  html += '</div>';
+  showOverlay('👥 Ask the Audience', html, true);
+  setTimeout(() => { LETTERS.forEach((_,i) => { const e=document.getElementById('aud-'+i); if(e) e.style.width=pcts[i]+'%'; }); }, 100);
+}
+
+function showOverlay(label, content, isHtml) {
+  document.getElementById('overlay-label').textContent = label;
+  const el = document.getElementById('overlay-content');
+  if (isHtml) el.innerHTML = content; else el.textContent = content;
+  document.getElementById('overlay').classList.add('active');
+}
+function closeOverlay() { document.getElementById('overlay').classList.remove('active'); }
+
+// ── RESULT ──
+function showResult(won, prize) {
+  clearInterval(timerInterval);
+  allOff();
+  document.getElementById('result-screen').style.display = 'flex';
+  if (won) {
+    sfx_correct();
+    setTimeout(() => { sfx_applause(); }, 400);
+    setTimeout(() => { sfx_applause(); }, 4200);
+    document.getElementById('result-icon').textContent = '🏆';
+    document.getElementById('result-title').innerHTML = "You're a <em>RialONE!</em>";
+    document.getElementById('result-prize').textContent = 'You answered all 15 questions correctly!';
+    document.getElementById('result-msg').textContent = 'You have mastered the Rialo protocol. The network is yours.';
+  } else {
+    sfx_wrong();
+    setTimeout(() => sfx_murmur(), 300);
+    document.getElementById('result-icon').textContent = '⚡';
+    document.getElementById('result-title').innerHTML = 'Game Over';
+    document.getElementById('result-prize').textContent = 'You walk away with ' + prize;
+    document.getElementById('result-msg').textContent = 'You made it to Question '+(currentQ+1)+'. Study the Rialo docs and come back stronger.';
+  }
+}
+
+function resetGame() {
+  clearInterval(timerInterval);
+  allOff();
+  document.getElementById('title-screen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
